@@ -11,9 +11,6 @@ class ApiController extends GetxController {
   var coffees = <Coffee>[].obs;
   final Dio dio = Dio();
 
-
-  
-
   Future<void> fetchWithHttp() async {
     final stopwatch = Stopwatch()..start();
     try {
@@ -29,9 +26,23 @@ class ApiController extends GetxController {
       httpTime.value = stopwatch.elapsedMilliseconds / 1000;
     }
   }
-
-
-
+  
+  Future<void> fetchWithHttpBroken() async {
+    final sw = Stopwatch()..start();
+    try {
+      // sengaja akses path yg gak ada → 404
+      final res = await http.get(Uri.parse('$baseUrl/api/v1/not-exist'));
+      if (res.statusCode >= 400) {
+        throw Exception('HTTP ${res.statusCode}: ${res.body}');
+      }
+    } catch (e) {
+      // bukti: http perlu manual try-catch
+      print('HTTP Error (expected): $e');
+    } finally {
+      sw.stop();
+      httpTime.value = sw.elapsedMilliseconds / 1000;
+    }
+  }
 
 
   Future<void> fetchWithDio() async {
