@@ -11,6 +11,9 @@ class ApiController extends GetxController {
   var coffees = <Coffee>[].obs;
   final Dio dio = Dio();
 
+
+  
+
   Future<void> fetchWithHttp() async {
     final stopwatch = Stopwatch()..start();
     try {
@@ -27,12 +30,16 @@ class ApiController extends GetxController {
     }
   }
 
+
+
+
+
   Future<void> fetchWithDio() async {
     final stopwatch = Stopwatch()..start();
-    dio.interceptors.add(LogInterceptor(
-      request: true, requestBody: false,
-      responseBody: true, error: true,
-    ));
+    // dio.interceptors.add(LogInterceptor(
+    //   request: true, requestBody: false,
+    //   responseBody: true, error: true,
+    // ));
     try {
       final res = await dio.get('$baseUrl/api/v1/menu');
       final data = res.data as List;
