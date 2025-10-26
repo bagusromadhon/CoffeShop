@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/api_controller.dart';
-
 class HomeView extends StatelessWidget {
+  HomeView({super.key});  // biar konsisten
   final controller = Get.put(ApiController());
 
   @override
@@ -13,14 +13,49 @@ class HomeView extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            ElevatedButton(
-              onPressed: controller.fetchWithHttp,
-              child: const Text('Fetch with HTTP'),
-            ),
-            ElevatedButton(
-              onPressed: controller.fetchWithDio,
-              child: const Text('Fetch with Dio'),
-            ),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              ElevatedButton(
+                onPressed: controller.fetchWithHttp,
+                child: const Text('Fetch with HTTP'),
+              ),
+              ElevatedButton(
+                onPressed: controller.fetchWithDio,
+                child: const Text('Fetch with Dio'),
+              ),
+              ElevatedButton(
+                onPressed: controller.fetchWithHttpBroken,
+                child: const Text('HTTP Broken (error test)'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    final res = await controller.chainWithAsyncAwait();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('AsyncAwait OK • total: ${res['total']}'))
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('AsyncAwait Error: $e'))
+                    );
+                  }
+                },
+                child: const Text('Chain: async–await'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  controller.chainWithCallbacks((res) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Callback OK • total: ${res['total']}'))
+                    );
+                  }, (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Callback Error: $e'))
+                    );
+                  });
+                },
+                child: const Text('Chain: callback'),
+              ),
+            ]),
             const SizedBox(height: 16),
             Text('HTTP time: ${controller.httpTime.value}s'),
             Text('Dio time: ${controller.dioTime.value}s'),
