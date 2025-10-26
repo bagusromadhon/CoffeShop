@@ -26,7 +26,7 @@ class ApiController extends GetxController {
       httpTime.value = stopwatch.elapsedMilliseconds / 1000;
     }
   }
-  
+
   Future<void> fetchWithHttpBroken() async {
     final sw = Stopwatch()..start();
     try {
@@ -43,6 +43,45 @@ class ApiController extends GetxController {
       httpTime.value = sw.elapsedMilliseconds / 1000;
     }
   }
+
+
+
+  // Versi 1: async–await (lebih readable)
+  Future<Map<String, dynamic>> chainWithAsyncAwait() async {
+    final menuRes = await dio.get('$baseUrl/api/v1/menu');
+    final list = (menuRes.data as List);
+    if (list.isEmpty) throw Exception('Menu kosong');
+    final first = list.first as Map<String, dynamic>;
+    final orderRes = await dio.post('$baseUrl/api/v1/order', data: {
+      'items': [
+        {'id': first['id'], 'qty': 1}
+      ],
+      'note': 'async-await chain'
+    });
+    return orderRes.data as Map<String, dynamic>;
+  }
+
+  // Versi 2: callback chaining (then...then...catchError)
+  Future<void> chainWithCallbacks(
+    void Function(Map<String, dynamic>) onDone,
+    void Function(Object) onError,
+  ) async {
+    dio.get('$baseUrl/api/v1/menu')
+      .then((menuRes) {
+        final list = (menuRes.data as List);
+        if (list.isEmpty) throw Exception('Menu kosong');
+        final first = list.first as Map<String, dynamic>;
+        return dio.post('$baseUrl/api/v1/order', data: {
+          'items': [
+            {'id': first['id'], 'qty': 1}
+          ],
+          'note': 'callback chain'
+        });
+      })
+      .then((orderRes) => onDone(orderRes.data as Map<String, dynamic>))
+      .catchError(onError);
+  }
+
 
 
   Future<void> fetchWithDio() async {
